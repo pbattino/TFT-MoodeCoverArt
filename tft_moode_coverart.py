@@ -174,6 +174,10 @@ def getMoodeMetadata(filename):
             elif metaDict['file'].find('Input Active', 0) > -1:
                 metaDict['source'] = 'input' 
             
+    if metaDict['artist'] == 'Radio station':
+        del metaDict['artist']
+    if metaDict['title'] == 'Radio station':
+        del metaDict['title']
 
     # return metadata
     return metaDict
@@ -234,7 +238,7 @@ def main():
     x1 = 20
     x2 = 20
     x3 = 20
-    title_top = 105
+    title_top = 200
     volume_top = 184
     time_top = 222
     act_mpd = isServiceActive('mpd')
@@ -257,8 +261,8 @@ def main():
 
                 
                 mn = 50
-                if OVERLAY == 3:
-                    img.paste(cover.resize((WIDTH,HEIGHT), Image.LANCZOS).convert('RGB'))
+                if OVERLAY >= 3:
+                    img.paste(cover.resize((WIDTH-40,HEIGHT-40), Image.LANCZOS).convert('RGB'),(20,0,220,200))
                 else:
                     img.paste(cover.resize((WIDTH,HEIGHT), Image.LANCZOS).filter(ImageFilter.GaussianBlur).convert('RGB'))
                 
@@ -315,13 +319,13 @@ def main():
                         else:
                             img.paste(play_icons, (0,0), play_icons)
     
-                        if 'volume' in mpd_status:
-                            vol = int(mpd_status['volume'])
-                            vol_x = int((vol/100)*(WIDTH - 33))
-                            draw.rectangle((5, volume_top, WIDTH-34, volume_top+8), (255,255,255,145))
-                            draw.rectangle((5, volume_top, vol_x, volume_top+8), bar_col)
+                        #if 'volume' in mpd_status:
+                        #    vol = int(mpd_status['volume'])
+                        #    vol_x = int((vol/100)*(WIDTH - 33))
+                        #    draw.rectangle((5, volume_top, WIDTH-34, volume_top+8), (255,255,255,145))
+                        #    draw.rectangle((5, volume_top, vol_x, volume_top+8), bar_col)
                     
-                    if OVERLAY < 3:    
+                    if OVERLAY < 3 or OVERLAY == 4:    
                         if TIMEBAR == 1:
                             if 'elapsed' in  mpd_status:
                                 el_time = int(float(mpd_status['elapsed']))
@@ -333,43 +337,48 @@ def main():
         
                         
                         top = 7
-                        if 'artist' in moode_meta:
-                            w1, y1 = draw.textsize(moode_meta['artist'], font_m)
-                            x1 = x1-20
-                            if x1 < (WIDTH - w1 - 20):
-                                x1 = 0
-                            if w1 <= WIDTH:
-                                x1 = (WIDTH - w1)//2
-                                
-                            if SHADE != 0:
-                                draw.text((x1+SHADE, top+SHADE), moode_meta['artist'], font=font_m, fill=str_col)
+                        #if 'artist' in moode_meta:
+                        #    w1, y1 = draw.textsize(moode_meta['artist'], font_m)
+                        #    x1 = x1-20
+                        #    if x1 < (WIDTH - w1 - 20):
+                        #        x1 = 0
+                        #    if w1 <= WIDTH:
+                        #        x1 = (WIDTH - w1)//2
+                        #        
+                        #    if SHADE != 0:
+                        #        draw.text((x1+SHADE, top+SHADE), moode_meta['artist'], font=font_m, fill=str_col)
 
-                            draw.text((x1, top), moode_meta['artist'], font=font_m, fill=txt_col)
+                        #    draw.text((x1, top), moode_meta['artist'], font=font_m, fill=txt_col)
                         
                         top = 35
                         
-                        if 'album' in moode_meta:
-                            w2, y2 = draw.textsize(moode_meta['album'], font_s)
-                            x2 = x2-20
-                            if x2 < (WIDTH - w2 - 20):
-                                x2 = 0
-                            if w2 <= WIDTH:
-                                x2 = (WIDTH - w2)//2
-                            if SHADE != 0:
-                                draw.text((x2+SHADE, top+SHADE), moode_meta['album'], font=font_s, fill=str_col)
-                            draw.text((x2, top), moode_meta['album'], font=font_s, fill=txt_col)
+                        #if 'album' in moode_meta:
+                        #    w2, y2 = draw.textsize(moode_meta['album'], font_s)
+                        #    x2 = x2-20
+                        #    if x2 < (WIDTH - w2 - 20):
+                        #        x2 = 0
+                        #    if w2 <= WIDTH:
+                        #        x2 = (WIDTH - w2)//2
+                        #    if SHADE != 0:
+                        #        draw.text((x2+SHADE, top+SHADE), moode_meta['album'], font=font_s, fill=str_col)
+                        #    draw.text((x2, top), moode_meta['album'], font=font_s, fill=txt_col)
 
-                        
-                        if 'title' in moode_meta:
-                            w3, y3 = draw.textsize(moode_meta['title'], font_l)
+                        output_list = []
+                        for key in ['title','artist', 'album']:
+                            if key in moode_meta:
+                                output_list.append(moode_meta[key])
+                        output = ' - '.join(output_list)
+                        if output != "":
+                            w3, y3 = draw.textsize(output, font_l)
                             x3 = x3-20
                             if x3 < (WIDTH - w3 - 20):
                                 x3 = 0
                             if w3 <= WIDTH:
                                 x3 = (WIDTH - w3)//2
                             if SHADE != 0:
-                                draw.text((x3+SHADE, title_top+SHADE), moode_meta['title'], font=font_l, fill=str_col)
-                            draw.text((x3, title_top), moode_meta['title'], font=font_l, fill=txt_col)
+                                draw.text((x3+SHADE, title_top+SHADE), output, font=font_l, fill=str_col)
+                            draw.rectangle((0,HEIGHT-40,WIDTH,HEIGHT), fill=(0,0,0))
+                            draw.text((x3, title_top), output, font=font_l, fill=(255,255,255))
 
 
                 else:
