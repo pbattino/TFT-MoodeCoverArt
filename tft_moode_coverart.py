@@ -370,9 +370,9 @@ def main():
                         output = ' - '.join(output_list)
                         if output != "":
                             w3, y3 = draw.textsize(output, font_l)
-                            x3 = x3-20
-                            if x3 < (WIDTH - w3 - 20):
-                                x3 = 0
+                            x3 = x3-10
+                            if x3 < (WIDTH - w3 - 10):
+                                x3 = WIDTH
                             if w3 <= WIDTH:
                                 x3 = (WIDTH - w3)//2
                             if SHADE != 0:
@@ -399,7 +399,7 @@ def main():
                 c += 1
 
 
-            time.sleep(1)
+            time.sleep(0.1)
             ol += 1
 
         client.disconnect()
