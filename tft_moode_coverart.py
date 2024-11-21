@@ -83,7 +83,7 @@ HEIGHT = 240
 font_s = ImageFont.truetype(script_path + '/fonts/Roboto-Medium.ttf',20)
 font_m = ImageFont.truetype(script_path + '/fonts/Roboto-Medium.ttf',24)
 font_l = ImageFont.truetype(script_path + '/fonts/Roboto-Medium.ttf',30)
-
+font_xl = ImageFont.truetype(script_path + '/fonts/Roboto-Medium.ttf',38)
 
 img = Image.new('RGB', (240, 240), color=(0, 0, 0, 25))
 
@@ -223,6 +223,41 @@ def get_cover(metaDict):
                             return cover
     return cover
 
+def checkWIFI():
+
+    waiting = True
+    count = 0
+    spinner_chars="/-\|"
+
+    while (waiting == True):
+
+
+        process = subprocess.run(['nmcli', '-t'], check=False, stdout=subprocess.PIPE, universal_newlines=True).stdout
+        first_line = process.partition('\n')[0]
+        
+        draw.rectangle((0,0,240,240), fill=(0,0,0))
+        txt = 'Starting!\nLooking for\nWIFI...\n' + spinner_chars[(count % 4)]
+        left, top, right, bottom = draw.multiline_textbbox((0, 0),txt, font=font_xl, spacing=4)
+        mlw, mlh = right - left, bottom - top
+        draw.multiline_text(((WIDTH-mlw)//2, 20), txt, fill=(255,255,255), font=font_xl, spacing=4, align="center")
+        disp.display(img)
+
+        if first_line.find("connected to") != -1:
+            network_name = first_line.partition('connected to ')[2]
+            draw.rectangle((0,0,240,240), fill=(0,0,0))
+            txt = 'Connected!\nNetwork name:' + network_name
+
+            left, top, right, bottom = draw.multiline_textbbox((0, 0),txt, font=font_l, spacing=4)
+            mlw, mlh = right - left, bottom - top
+            draw.multiline_text(((WIDTH-mlw)//2, 20), txt, fill=(255,255,255), font=font_l, spacing=4, align="center")
+            disp.display(img)
+            time.sleep(3)
+            waiting = False
+
+        count += 1
+        time.sleep(1)
+
+    return
 
 def main():
 
@@ -241,10 +276,14 @@ def main():
     title_top = 200
     volume_top = 184
     time_top = 222
-    act_mpd = isServiceActive('mpd')
+
+    #act_mpd = isServiceActive('mpd')
     SHADE = displayConf['shadow']
 
-    if act_mpd == True:
+    # booting message (before looking for MPD)
+    checkWIFI()
+
+    if isServiceActive('mpd') == True:
         while True:
             client = musicpd.MPDClient()   # create client object
             try:     
@@ -369,7 +408,10 @@ def main():
                                 output_list.append(moode_meta[key])
                         output = ' - '.join(output_list)
                         if output != "":
-                            w3, y3 = draw.textsize(output, font_l)
+
+                            boundingbox = draw.textbbox((0,0),output,font_l)
+                            w3 = boundingbox[2] - boundingbox[0]
+                            y3 = boundingbox[3] - boundingbox[1]
                             x3 = x3-10
                             if x3 < (WIDTH - w3 - 10):
                                 x3 = WIDTH
@@ -384,7 +426,8 @@ def main():
                 else:
                     if 'file' in moode_meta:
                         txt = moode_meta['file'].replace(' ', '\n')
-                        w3, h3 = draw.multiline_textsize(txt, font_l, spacing=6)
+                        left, top, right, bottom = draw.multiline_textbbox((0, 0),txt, font_l, spacing=6)
+                        w3, h3 = right - left, bottom - top
                         x3 = (WIDTH - w3)//2
                         y3 = (HEIGHT - h3)//2
                         if SHADE != 0:
@@ -406,7 +449,8 @@ def main():
     else:
         draw.rectangle((0,0,240,240), fill=(0,0,0))
         txt = 'MPD not Active!\nEnsure MPD is running\nThen restart script'
-        mlw, mlh = draw.multiline_textsize(txt, font=font_m, spacing=4)
+        left, top, right, bottom = draw.multiline_textbbox((0, 0),txt, font=font_m, spacing=4)
+        mlw, mlh = right - left, bottom - top
         draw.multiline_text(((WIDTH-mlw)//2, 20), txt, fill=(255,255,255), font=font_m, spacing=4, align="center")
         disp.display(img)
         
