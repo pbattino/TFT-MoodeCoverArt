@@ -231,30 +231,54 @@ def checkWIFI():
 
     while (waiting == True):
 
-
-        process = subprocess.run(['nmcli', '-t'], check=False, stdout=subprocess.PIPE, universal_newlines=True).stdout
-        first_line = process.partition('\n')[0]
-        
-        draw.rectangle((0,0,240,240), fill=(0,0,0))
-        txt = 'Starting!\nLooking for\nWIFI...\n' + spinner_chars[(count % 4)]
-        left, top, right, bottom = draw.multiline_textbbox((0, 0),txt, font=font_xl, spacing=4)
-        mlw, mlh = right - left, bottom - top
-        draw.multiline_text(((WIDTH-mlw)//2, 20), txt, fill=(255,255,255), font=font_xl, spacing=4, align="center")
-        disp.display(img)
-
-        if first_line.find("connected to") != -1:
-            network_name = first_line.partition('connected to ')[2]
+        if count < 90:
+            process = subprocess.run(['nmcli', '-t'], check=False, stdout=subprocess.PIPE, universal_newlines=True).stdout
+            first_line = process.partition('\n')[0]
+            
             draw.rectangle((0,0,240,240), fill=(0,0,0))
-            txt = 'Connected!\nNetwork name:' + network_name
-
-            left, top, right, bottom = draw.multiline_textbbox((0, 0),txt, font=font_l, spacing=4)
+            txt = 'Ciao Enza!\nLooking for\nWIFI...\n' + spinner_chars[(count % 4)]
+            left, top, right, bottom = draw.multiline_textbbox((0, 0),txt, font=font_xl, spacing=4)
             mlw, mlh = right - left, bottom - top
-            draw.multiline_text(((WIDTH-mlw)//2, 20), txt, fill=(255,255,255), font=font_l, spacing=4, align="center")
+            draw.multiline_text(((WIDTH-mlw)//2, 20), txt, fill=(255,255,255), font=font_xl, spacing=4, align="center")
             disp.display(img)
-            time.sleep(3)
-            waiting = False
+
+            if first_line.find("connected to") != -1:
+                network_name = first_line.partition('connected to ')[2]
+                draw.rectangle((0,0,240,240), fill=(0,0,0))
+
+                txt = 'Connected!\nNetwork name:\n' + network_name
+                left, top, right, bottom = draw.multiline_textbbox((0, 0),txt, font=font_l, spacing=4)
+                mlw, mlh = right - left, bottom - top
+                draw.multiline_text(((WIDTH-mlw)//2, 20), txt, fill=(255,255,255), font=font_l, spacing=4, align="center")
+                disp.display(img)
+
+                # give time to read message
+                time.sleep(3)
+
+                # clear screen
+                draw.rectangle((0,0,240,240), fill=(0,0,0))
+                disp.display(img)
+
+                txt = 'Starting\nmusic app\nMPD\nplease wait' 
+                left, top, right, bottom = draw.multiline_textbbox((0, 0),txt, font=font_l, spacing=4)
+                mlw, mlh = right - left, bottom - top
+                draw.multiline_text(((WIDTH-mlw)//2, 20), txt, fill=(255,255,255), font=font_l, spacing=4, align="center")
+                disp.display(img)
+
+                waiting = False
+
+        else:
+            draw.rectangle((0,0,240,240), fill=(0,0,0))
+            txt = 'No network found!\n\nConnect to\nWIFI: "radio-setup"\npassw: "radio.local"\nand browse to\nhttp://radio.local' 
+            left, top, right, bottom = draw.multiline_textbbox((0, 0),txt, font=font_m, spacing=4)
+            mlw, mlh = right - left, bottom - top
+            draw.multiline_text((0,0), txt, fill=(255,255,255), font=font_m, spacing=4, align="left")
+            disp.display(img) 
 
         count += 1
+
+
+
         time.sleep(1)
 
     return
@@ -277,13 +301,20 @@ def main():
     volume_top = 184
     time_top = 222
 
-    #act_mpd = isServiceActive('mpd')
+    
     SHADE = displayConf['shadow']
 
     # booting message (before looking for MPD)
     checkWIFI()
 
-    if isServiceActive('mpd') == True:
+    # wait for MPD to start
+    act_mpd = isServiceActive('mpd')
+
+    if act_mpd == True:
+
+        draw.rectangle((0,0,240,240), fill=(0,0,0))
+        disp.display(img)
+
         while True:
             client = musicpd.MPDClient()   # create client object
             try:     
